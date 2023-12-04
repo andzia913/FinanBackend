@@ -5,6 +5,7 @@ import {BalanceEntity} from "../types/balance.entity";
 
 type BalanceRecordResult = [BalanceRecord[], FieldPacket[]]
 
+
 export class BalanceRecord implements BalanceEntity{
     id?: string;
     user_email?: string;
