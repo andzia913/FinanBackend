@@ -23,9 +23,8 @@ financialBalanceRouter
             const id = req.params.id;
             const record = await BalanceRecord.getOne(id);
             if (record) {
-              const result = new BalanceRecord(record);
               res.json(record);
-              console.log('czy on przez pobrania z klasy jest jej istancja', result.id_category)
+              console.log(record[0])
             } else {
               res.status(404).json({ error: 'Rekord o podanym id nie istnieje.' });
             }

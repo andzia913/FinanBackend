@@ -31,13 +31,12 @@ export class BalanceRecord implements BalanceEntity{
     }
     public static async listAll(): Promise<BalanceRecord[]> {
         const [results] = (await pool.execute(
-            "SELECT financial_balance.*, types.type_name, types.id_type, categories.category_name, types.id_type FROM `financial_balance` LEFT JOIN `types` ON financial_balance.type = types.id_type LEFT JOIN `categories` ON financial_balance.category = categories.id_category ORDER BY financial_balance.date DESC")) as BalanceRecordResult;
-        // console.log(results.map(obj => new BalanceRecord(obj)));
+            "SELECT financial_balance.*, types.type_name, types.id_type, categories.category_name, categories.id_category FROM `financial_balance` LEFT JOIN `types` ON financial_balance.type = types.id_type LEFT JOIN `categories` ON financial_balance.category = categories.id_category ORDER BY financial_balance.date DESC")) as BalanceRecordResult;
         return results.map(obj => new BalanceRecord(obj));
     }
     public static async getOne(id: string): Promise<BalanceRecord | null> {
       const [results] = (await pool.execute(
-        "SELECT financial_balance.*, types.type_name, types.id_type, categories.category_name, types.id_type FROM `financial_balance` LEFT JOIN `types` ON financial_balance.type = types.id_type LEFT JOIN `categories` ON financial_balance.category = categories.id_category WHERE financial_balance.id = ?",
+        "SELECT financial_balance.*, types.type_name, types.id_type, categories.category_name, categories.id_category FROM `financial_balance` LEFT JOIN `types` ON financial_balance.type = types.id_type LEFT JOIN `categories` ON financial_balance.category = categories.id_category WHERE financial_balance.id = ?",
         [id]
       )) as BalanceRecordResult;
     
@@ -45,8 +44,21 @@ export class BalanceRecord implements BalanceEntity{
         console.error('No record with this id')
         return null;
       }
-    
-      return new BalanceRecord(results[0]);
+      return results[0];
+    //    const record = results[0];
+    // return {
+    //     id: record.id,
+    //     user_email: record.user_email,
+    //     type: record.type,
+    //     type_name: record.type_name,
+    //     id_type: record.id_type,
+    //     date: record.date,
+    //     value: record.value,
+    //     category: record.category,
+    //     category_name: record.category_name,
+    //     comment: record.comment,
+    //     planned: record.planned
+    // };
     }
     
     public async insert():Promise<string> {
