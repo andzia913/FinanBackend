@@ -101,3 +101,4 @@ export class BalanceRecord implements BalanceEntity{
           await pool.execute(updateQuery, updateValues);
         }
 }
+  
