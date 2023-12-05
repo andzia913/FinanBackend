@@ -97,21 +97,16 @@ export class BalanceRecord implements BalanceEntity{
           if (!this.id) {
             throw new Error('Cannot update a record without an ID.');
           }
-          const validUpdates: Partial<BalanceEntity> = {};
-          for (const key in updatedData) {
-            if (updatedData[key] !== null && updatedData[key] !== undefined) {
-              validUpdates[key] = updatedData[key];
-            }
-          }
+          // console.log('kto jest nullem w tym obiekcie', updatedData, 'kto jest thisem', this)
       
-          if (Object.keys(validUpdates).length === 0) {
-            throw new Error('No valid updates provided.');
-          }
-      
-          const updateQuery = 'UPDATE `financial_balance` SET ' + Object.keys(validUpdates).map((key) => `${key} = ?`).join(', ') + ' WHERE id = ?';
-          const updateValues = [...Object.values(validUpdates), this.id];
-      
-          await pool.execute(updateQuery, updateValues);
-        }
+          await pool.execute('UPDATE `financial_balance` SET type = :type, date = :date, value = :value, category = :category, comment = :comment WHERE id = :id', {
+            id: this.id,
+            type: updatedData.id_type || this.id_type,
+            date: updatedData.date || this.date,
+            value: updatedData.value || this.value,
+            category: updatedData.id_category || this.id_category,
+            comment: updatedData.comment || this.comment,
+          });
+              }
 }
   

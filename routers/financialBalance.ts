@@ -24,7 +24,6 @@ financialBalanceRouter
             const record = await BalanceRecord.getOne(id);
             if (record) {
               res.json(record);
-              console.log(record[0])
             } else {
               res.status(404).json({ error: 'Rekord o podanym id nie istnieje.' });
             }
@@ -40,6 +39,7 @@ financialBalanceRouter
                 financialBalance);
         })
         .post('/add', async (req: Request, res: Response) => {
+          console.log('próbuje dodać na backendzie ')
             try {
               const formData = req.body;
               const insertedId = await new BalanceRecord(formData).insert()
@@ -54,11 +54,11 @@ financialBalanceRouter
         .delete('/delete/:id', async (req: Request, res: Response)=>{
           const id = req.params.id;
           try {
-            const recordToDelete = await BalanceRecord.getOne(id);
-        
-            if (!recordToDelete) {
+            const record = await BalanceRecord.getOne(id);
+            if (!record) {
               res.status(404).json({ error: "Rekord o podanym ID nie istnieje." });
             } else {
+              const recordToDelete = new BalanceRecord(record);
               await recordToDelete.delete();
               res.status(204).send();
             }
@@ -72,11 +72,13 @@ financialBalanceRouter
           const updatedData = req.body;
         
           try {
-            const recordToUpdate = await BalanceRecord.getOne(id);
+            const isRecord = await BalanceRecord.getOne(id)
         
-            if (!recordToUpdate) {
+            if (!isRecord) {
               res.status(404).json({ error: "Rekord o podanym ID nie istnieje." });
             } else {
+              const recordToUpdate = new BalanceRecord(isRecord);
+              // console.log(recordToUpdate instanceof BalanceRecord,'- jest instatncja', typeof recordToUpdate, '-jest typu' )
               await recordToUpdate.update(updatedData);
               res.status(200).json({ message: "Rekord zaktualizowany pomyślnie." });
             }
