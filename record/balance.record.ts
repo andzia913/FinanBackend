@@ -108,5 +108,6 @@ export class BalanceRecord implements BalanceEntity{
             comment: updatedData.comment || this.comment,
           });
               }
+              
 }
   
