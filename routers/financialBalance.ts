@@ -2,6 +2,7 @@ import { Request, Response, Router } from "express";
 import { BalanceRecord } from "../record/balance.record";
 import { CategoryRecord } from "../record/category.record";
 import { TypeRecord } from "../record/type.record";
+import verifyTokenMiddleware from "../utils/verifyToken";
 
 export const financialBalanceRouter = Router();
 

@@ -7,9 +7,9 @@ import { UserEntity } from "../types/user.entity";
 export const registerRouter = Router();
 
 registerRouter
-    .get('/',  async(req: Request, res:Response) => {
-        res.send('abcde')
-    })
+    // .get('/',  async(req: Request, res:Response) => {
+    //     res.send('abcde')
+    // })
     .post('/', async(req: Request, res:Response) => {
     try{
         const newUser: UserEntity = req.body
