@@ -65,7 +65,7 @@ app.use("/", mainRouter);
 app.use("/login", loginRouter);
 app.use("/register", registerRouter);
 app.use("/logout", logoutRouter);
-app.use("/costStructure", costStructureRouter);
+app.use("/cost-structure", costStructureRouter);
 app.use("/financialBalance", financialBalanceRouter);
 app.use("/cashFlow", cashFlowRouter);
 app.use("/financialGoals", financialGoalsRouter);
