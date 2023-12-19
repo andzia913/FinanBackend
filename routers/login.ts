@@ -1,51 +1,53 @@
-import { Request, Response, Router } from "express";
-import * as bcrypt from 'bcrypt';
-import UserRecord from '../record/user.record';
-import * as jsonwebtoken from "jsonwebtoken";
-const passport = require('passport');
-const jwt = require('jsonwebtoken');
+import { Request, Response, Router, request } from "express";
+import * as bcrypt from "bcrypt";
+import UserRecord from "../record/user.record";
 export const loginRouter = Router();
-import { localStrategy } from "../utils/passportStrategy";
 
+declare module "express-session" {
+  interface SessionData {
+    userEmail: string;
+  }
+}
 loginRouter
-    .post('/',
-     passport.authenticate('local', {failureMessage: true, failWithError: true} ), 
-     async(req: Request, res:Response) => {
-        console.log('zapytanie przeszło na /login', req)
-//     try{
-//         const email = req.body.email;
-//         const password = req.body.password;
-//         const userData = await UserRecord.getOne(email)
-    
-//               if (!userData) {
-//                 return res.status(400).json({ message: "Invalid email or password" });;
-//              }
-//             const user = new UserRecord(userData)
-//             console.log('proba logowania', 'email:', email, 'password', password, 'user:', user)
-//              const passwordValidation = await bcrypt.compare(password, user.password);
+  .get("/", (req: Request, res: Response) => {
+    console.log(req.body, req.headers);
 
-//              console.log('po walidacji hasła')
-//              if(passwordValidation && process.env.SECRET_KEY){
-//                 const jsontoken = jsonwebtoken.sign({email: user.email, isAdmin: user.isAdmin}, process.env.SECRET_KEY, { expiresIn: '30m'} );
-//                 res.cookie('token', jsontoken, { httpOnly: true, secure: true, expires: new Date(Number(new Date()) + 30*60*1000) });
-                
-//                 res.json({token: jsontoken});
-//                //return res.redirect('/mainpage') ;
-//                 console.log('token przesłany w odpowiedzi na poprawne logowanie', jsontoken)
-//             }  else{
-//                 return res.json({
-//                     message: "Invalid email or password"
-//                 });
-//             } 
-         
-//             } catch(e){
-//                 console.log(e);
-//                 res.status(500).json({ message: "Internal Server Error" });
-//             }
-// })
-     })
-    .delete('/', passport.authenticate('local'), (req: Request, res: Response) => {
-        // Jeśli autentykacja przebiegła pomyślnie
-        res.json({ success: true, user: req.user });
-      });
+    if (req.session.userEmail) {
+      res.send({ loggedIn: true, user: req.session.userEmail });
+    } else {
+      res.send({ loggedIn: false });
+    }
+  })
+  .post("/", async (req: Request, res: Response) => {
+    console.log(req.body, req.headers);
+    try {
+      const email = req.body.email;
+      const password = req.body.password;
+      const userData = await UserRecord.getOne(email);
 
+      if (!userData) {
+        return res.status(400).json({ message: "Invalid email or password" });
+      }
+      const user = new UserRecord(userData);
+
+      const passwordValidation = await bcrypt.compare(password, user.password);
+      console.log(res.header);
+
+      console.log("po walidacji hasła");
+      if (passwordValidation && process.env.SECRET_KEY) {
+        req.session.userEmail = req.body.email;
+        req.session.save(function (err) {
+          if (err) return res.status(500).json({ message: err });
+        });
+        console.log(req.session.userEmail);
+        res.json(user.email);
+      } else {
+        return res.json({
+          message: "Invalid email or password",
+        });
+      }
+    } catch (e) {
+      console.log(e);
+      res.status(500).json({ message: "Internal Server Error" });
+    }
+  });
