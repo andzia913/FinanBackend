@@ -46,20 +46,6 @@ export class BalanceRecord implements BalanceEntity {
       return null;
     }
     return results[0];
-    //    const record = results[0];
-    // return {
-    //     id: record.id,
-    //     user_email: record.user_email,
-    //     type: record.type,
-    //     type_name: record.type_name,
-    //     id_type: record.id_type,
-    //     date: record.date,
-    //     value: record.value,
-    //     category: record.category,
-    //     category_name: record.category_name,
-    //     comment: record.comment,
-    //     planned: record.planned
-    // };
   }
 
   public async insert(): Promise<string> {
@@ -103,7 +89,6 @@ export class BalanceRecord implements BalanceEntity {
     if (!this.id) {
       throw new Error("Cannot update a record without an ID.");
     }
-    // console.log('kto jest nullem w tym obiekcie', updatedData, 'kto jest thisem', this)
 
     await pool.execute(
       "UPDATE `financial_balance` SET type = :type, date = :date, value = :value, category = :category, comment = :comment WHERE id = :id",

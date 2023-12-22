@@ -14,6 +14,7 @@ financialBalanceRouter
 
   .get("/categories", async (req: Request, res: Response) => {
     const categories = await CategoryRecord.listAll();
+    console.log("kategorie bilans", categories);
     res.json(categories);
   })
   .get("/get-one/:id", async (req: Request, res: Response) => {
