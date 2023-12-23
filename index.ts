@@ -10,7 +10,7 @@ import { mainRouter } from "./routers/main";
 import { costStructureRouter } from "./routers/costStructure";
 import { financialBalanceRouter } from "./routers/financialBalance";
 import { cashFlowRouter } from "./routers/cashFlow";
-import { financialGoalsRouter } from "./routers/cashGoals";
+import { cashGoalsRouter } from "./routers/cashGoals";
 import { loginRouter } from "./routers/login";
 import { registerRouter } from "./routers/register";
 import { logoutRouter } from "./routers/logout";
@@ -45,8 +45,6 @@ app.options(
   })
 );
 
-// app.use(bodyParser.urlencoded({ extended: true }));
-
 app.use(
   session({
     secret: process.env.SECRET_KEY!,
@@ -68,6 +66,6 @@ app.use("/logout", logoutRouter);
 app.use("/cost-structure", costStructureRouter);
 app.use("/financialBalance", financialBalanceRouter);
 app.use("/cashFlow", cashFlowRouter);
-app.use("/financialGoals", financialGoalsRouter);
+app.use("/cash-goals", cashGoalsRouter);
 
 app.listen(5000);
