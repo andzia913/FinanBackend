@@ -19,8 +19,11 @@ push.autoSetupRemote = true
 .env.development.local
 .env.test.local
 .env.production.local
+.env
 
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 /node_modules/
+utils/PRIVATE_KEY.json
+.env
