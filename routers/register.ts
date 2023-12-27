@@ -5,44 +5,24 @@ import { UserEntity } from "../types/user.entity";
 
 export const registerRouter = Router();
 
-registerRouter
-  // .get('/',  async(req: Request, res:Response) => {
-  //     res.send('abcde')
-  // })
-  .post("/", async (req: Request, res: Response) => {
-    try {
-      const newUser: UserEntity = req.body;
-      console.log(req.body, "co przyszło z frontu", "obj new user:", newUser);
-
-      if (!newUser.name || !newUser.email || !newUser.password) {
-        console.log(
-          "nie ma pws",
-          newUser.password,
-          "albo name",
-          newUser.name,
-          "albo email",
-          newUser.email
-        );
-        return res.sendStatus(400);
-      }
-
-      const salt = bcrypt.genSaltSync(10);
-      newUser.password = bcrypt.hashSync(newUser.password, salt);
-      console.log("hashowanie hasła", newUser.password);
-      const completedUser = { ...newUser, isAdmin: 0 };
-      const user = new UserRecord(completedUser);
-      await UserRecord.insert(completedUser);
-      console.log("po wstawieniu do bazy");
-      // if(process.env.SECRET_KEY){
-      //     res.cookie('token', jsontoken, { httpOnly: true, secure: true , expires: new Date(Number(new Date()) + 30*60*1000) });
-      //     console.log('token cookie')
-
-      //     res.json({token: jsontoken});
-      // }
-
-      //return res.redirect('/mainpage');
-    } catch (e) {
-      console.log(e);
-      res.sendStatus(400);
+registerRouter.post("/", async (req: Request, res: Response) => {
+  try {
+    const newUser: UserEntity = req.body;
+    if (!newUser.name || !newUser.email || !newUser.password) {
+      return res.status(400).json({ message: "Invalid data" });
     }
-  });
+    const isUserArledyExist = await UserRecord.getOne(newUser.email);
+    if (isUserArledyExist) {
+      res.status(409).json({ message: "User with this email already exists." });
+      return;
+    }
+    const salt = bcrypt.genSaltSync(10);
+    newUser.password = bcrypt.hashSync(newUser.password, salt);
+    const completedUser = { ...newUser, isAdmin: 0 };
+    await UserRecord.insert(completedUser);
+    res.status(201).json({ message: "User successfully registered" });
+  } catch (e) {
+    console.log(e);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
