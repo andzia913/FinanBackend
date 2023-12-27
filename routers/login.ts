@@ -1,53 +1,37 @@
-import { Request, Response, Router, request } from "express";
+import { Request, Response, Router } from "express";
 import * as bcrypt from "bcrypt";
 import UserRecord from "../record/user.record";
+const jwt = require("jsonwebtoken");
+
 export const loginRouter = Router();
 
-declare module "express-session" {
-  interface SessionData {
-    userEmail: string;
-  }
-}
-loginRouter
-  .get("/", (req: Request, res: Response) => {
-    console.log(req.body, req.headers);
-
-    if (req.session.userEmail) {
-      res.send({ loggedIn: true, user: req.session.userEmail });
+loginRouter.post("/", async (req: Request, res: Response) => {
+  try {
+    const email = req.body.email;
+    const password = req.body.password;
+    const userData = await UserRecord.getOne(email);
+    if (!userData) {
+      return res.status(400).json({ message: "Invalid email or password" });
+    }
+    const passwordValidation = await bcrypt.compare(
+      password,
+      userData.password
+    );
+    if (!passwordValidation) {
+      return res.status(401).json({ message: "Invalid password" });
+    }
+    if (passwordValidation && process.env.SECRET_KEY) {
+      const accessToken = jwt.sign(
+        { mail: userData.email },
+        process.env.SECRET_KEY
+      );
+      res.json({ accessToken: accessToken });
     } else {
-      res.send({ loggedIn: false });
+      res.status(400).json({ message: "Invalid email or password" });
+      return;
     }
-  })
-  .post("/", async (req: Request, res: Response) => {
-    console.log(req.body, req.headers);
-    try {
-      const email = req.body.email;
-      const password = req.body.password;
-      const userData = await UserRecord.getOne(email);
-
-      if (!userData) {
-        return res.status(400).json({ message: "Invalid email or password" });
-      }
-      const user = new UserRecord(userData);
-
-      const passwordValidation = await bcrypt.compare(password, user.password);
-      console.log(res.header);
-
-      console.log("po walidacji hasła");
-      if (passwordValidation && process.env.SECRET_KEY) {
-        req.session.userEmail = req.body.email;
-        req.session.save(function (err) {
-          if (err) return res.status(500).json({ message: err });
-        });
-        console.log(req.session.userEmail);
-        res.json(user.email);
-      } else {
-        return res.json({
-          message: "Invalid email or password",
-        });
-      }
-    } catch (e) {
-      console.log(e);
-      res.status(500).json({ message: "Internal Server Error" });
-    }
-  });
+  } catch (e) {
+    console.log(e);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
