@@ -1,11 +1,6 @@
 import * as express from "express";
-import { Request, Response } from "express";
 import "express-async-errors";
-import * as cors from "cors";
-import * as cookieParser from "cookie-parser";
-const session = require("express-session");
 import * as dotenv from "dotenv";
-import * as bodyParser from "body-parser";
 import { mainRouter } from "./routers/main";
 import { costStructureRouter } from "./routers/costStructure";
 import { financialBalanceRouter } from "./routers/financialBalance";
@@ -13,56 +8,37 @@ import { cashFlowRouter } from "./routers/cashFlow";
 import { cashGoalsRouter } from "./routers/cashGoals";
 import { loginRouter } from "./routers/login";
 import { registerRouter } from "./routers/register";
-import { logoutRouter } from "./routers/logout";
+const jwt = require("jsonwebtoken");
 
-declare module "express-session" {
-  interface SessionData {
-    userId: string;
-  }
-}
+const app = require("https-localhost")();
 
 dotenv.config();
-// const app = express();
-const app = require("https-localhost")();
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.options(
-  "*",
-  cors({
-    preflightContinue: false,
-    origin: "https://127.0.0.1:5173",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-      "X-Requested-With",
-      "Access-Control-Request-Headers",
-      "Access-Control-Allow-Origin",
-    ],
-    optionsSuccessStatus: 200,
-  })
-);
-
-app.use(
-  session({
-    secret: process.env.SECRET_KEY!,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      maxAge: 60 * 60 * 24,
-      sameSite: "None",
-      httpOnly: false,
-      secure: true,
-    },
-  })
-);
-
-app.use("/", mainRouter);
 app.use("/login", loginRouter);
 app.use("/register", registerRouter);
-app.use("/logout", logoutRouter);
+
+app.use((req, res, next) => {
+  const token = req.headers["authorization"];
+  if (!token) {
+    return res.sendStatus(401);
+  }
+  jwt.verify(
+    token.replace("Bearer ", ""),
+    process.env.SECRET_KEY,
+    (err, tokenData) => {
+      if (err) {
+        return res.sendStatus(403);
+      }
+      req.body.user_email = tokenData.mail;
+      next();
+    }
+  );
+});
+
+app.use("/", mainRouter);
 app.use("/cost-structure", costStructureRouter);
 app.use("/financialBalance", financialBalanceRouter);
 app.use("/cashFlow", cashFlowRouter);
