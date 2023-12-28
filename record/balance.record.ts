@@ -1,7 +1,7 @@
 import { pool } from "../utils/db";
 import { v4 as uuid } from "uuid";
 import { FieldPacket } from "mysql2";
-import { BalanceEntity } from "../types/balance.entity";
+import { BalanceEntity, SumOfCostsAndIncomes } from "../types/balance.entity";
 
 type BalanceRecordResult = [BalanceRecord[], FieldPacket[]];
 
@@ -35,6 +35,23 @@ export class BalanceRecord implements BalanceEntity {
     )) as BalanceRecordResult;
     return results.map((obj) => new BalanceRecord(obj));
   }
+  public static async getSumOfCostsAndIncomes(
+    user_email: string
+  ): Promise<SumOfCostsAndIncomes> {
+    const [balanceIncomeSum] = await pool.execute(
+      "SELECT SUM(financial_balance.value) AS totalIncome FROM financial_balance LEFT JOIN `types` ON financial_balance.type = types.id_type WHERE financial_balance.user_email = ? AND types.type_name = 'Przychód'",
+      [user_email]
+    );
+    const [balanceCostSum] = await pool.execute(
+      "SELECT SUM(financial_balance.value) AS totalCost FROM financial_balance LEFT JOIN `types` ON financial_balance.type = types.id_type WHERE financial_balance.user_email = ? AND types.type_name = 'Koszt'",
+      [user_email]
+    );
+    return {
+      balanceCostSum: balanceCostSum[0],
+      balanceIncomeSum: balanceIncomeSum[0],
+    };
+  }
+
   public static async getOne(id: string): Promise<BalanceRecord | null> {
     const [results] = (await pool.execute(
       "SELECT financial_balance.*, types.type_name, types.id_type, categories.category_name, categories.id_category FROM `financial_balance` LEFT JOIN `types` ON financial_balance.type = types.id_type LEFT JOIN `categories` ON financial_balance.category = categories.id_category WHERE financial_balance.id = ?",

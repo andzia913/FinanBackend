@@ -23,7 +23,7 @@ costStructureRouter
       if (!resultsFromDb) {
         return res
           .status(404)
-          .json({ error: "Brak danych dla podanych parametrów." });
+          .json({ error: "No data for the provided parameters." });
       }
       const allCategories = await CategoryRecord.listAll(user_email);
 
@@ -41,20 +41,24 @@ costStructureRouter
       res.json(resultsWithZeroCategories);
     } catch (error) {
       console.error("Błąd w trakcie przetwarzania zapytania:", error);
-      res.status(500).json({ error: "Wystąpił błąd serwera." });
+      res.status(500).json({ message: "Internal Server Error" });
     }
   })
   .post("/", async (req: Request, res: Response) => {
     try {
       const user_email: string = req.body.user_email;
       const category_name: string = req.body.category_name;
+      if (!category_name) {
+        res.status(401).json({ message: "Invalid data" });
+        return;
+      }
       const insertedId = await new CategoryRecord({ category_name }).insert(
         user_email
       );
       res.status(201).json({ id: insertedId });
     } catch (error) {
       console.error("Błąd podczas przetwarzania żądania:", error);
-      res.status(500).json({ error: "Błąd podczas przetwarzania żądania" });
+      res.status(500).json({ message: "Internal Server Error" });
     }
   })
   .delete("/delete/:id", async (req: Request, res: Response) => {
@@ -62,7 +66,9 @@ costStructureRouter
     try {
       const record = (await CategoryRecord.getOne(id)) as CategoryRecord;
       if (!record) {
-        res.status(404).json({ error: "Rekord o podanym ID nie istnieje." });
+        res
+          .status(404)
+          .json({ error: "Record with the provided ID does not exist." });
       } else {
         const [result] = (await pool.execute(
           "SELECT COUNT(*) as count FROM `financial_balance` WHERE category = ? AND user_email = ?",
@@ -73,16 +79,16 @@ costStructureRouter
         if (isCategoryInUse) {
           res.status(400).json({
             error:
-              "Nie można usunąć kategorii, ponieważ jest powiązana z innym rekordem.",
+              "Cannot delete the category as it is associated with another record.",
           });
         } else {
           const recordToDelete = new CategoryRecord({ ...record });
           await recordToDelete.delete();
-          res.status(204).send();
+          res.status(204).json({ success: true });
         }
       }
     } catch (error) {
       console.error("Błąd podczas usuwania rekordu:", error);
-      res.status(500).json({ error: "Błąd podczas usuwania rekordu" });
+      res.status(500).json({ message: "Internal Server Error" });
     }
   });

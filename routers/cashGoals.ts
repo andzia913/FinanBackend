@@ -58,13 +58,17 @@ cashGoalsRouter
       res.status(201).json({ message: "Dedicated amount added successfully" });
     } catch (error) {
       console.error("Błąd podczas przetwarzania żądania:", error);
-      res.status(500).json({ error: "Błąd podczas przetwarzania żądania" });
+      res.status(500).json({ message: "Internal Server Error" });
     }
   })
   .post("/add", async (req: Request, res: Response) => {
     try {
       const user_email = req.body.user_email;
       const goalData = req.body;
+      if (!goalData.value || !goalData.goal_name || !goalData.date) {
+        res.status(401).json({ message: "Invalid data" });
+        return;
+      }
       const insertedId = await new GoalRecord({
         goal_name: goalData.goal_name,
         value: goalData.value,
@@ -73,6 +77,6 @@ cashGoalsRouter
       res.status(201).json({ id: insertedId });
     } catch (error) {
       console.error("Błąd podczas przetwarzania żądania:", error);
-      res.status(500).json({ error: "Błąd podczas przetwarzania żądania" });
+      res.status(500).json({ message: "Internal Server Error" });
     }
   });
