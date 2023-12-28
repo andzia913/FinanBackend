@@ -13,7 +13,7 @@ export const costStructureRouter = Router();
 costStructureRouter
   .get("/", async (req: Request, res: Response) => {
     try {
-      const user_email = req.body.user_email || "tester@testowy.test";
+      const user_email = req.body.user_email;
 
       const [resultsFromDb] = (await pool.execute(
         "SELECT categories.id_category AS id, categories.category_name AS category, SUM(value) AS total FROM financial_balance LEFT JOIN `types` ON financial_balance.type = types.id_type LEFT JOIN `categories` ON financial_balance.category = categories.id_category WHERE financial_balance.user_email = ? AND types.type_name = 'Koszt' GROUP BY categories.category_name",
@@ -25,7 +25,7 @@ costStructureRouter
           .status(404)
           .json({ error: "Brak danych dla podanych parametrów." });
       }
-      const allCategories = await CategoryRecord.listAll();
+      const allCategories = await CategoryRecord.listAll(user_email);
 
       const resultsWithZeroCategories = allCategories.map((category) => {
         const resultExists = resultsFromDb.find(
@@ -46,8 +46,11 @@ costStructureRouter
   })
   .post("/", async (req: Request, res: Response) => {
     try {
+      const user_email: string = req.body.user_email;
       const category_name: string = req.body.category_name;
-      const insertedId = await new CategoryRecord({ category_name }).insert();
+      const insertedId = await new CategoryRecord({ category_name }).insert(
+        user_email
+      );
       res.status(201).json({ id: insertedId });
     } catch (error) {
       console.error("Błąd podczas przetwarzania żądania:", error);
@@ -83,21 +86,3 @@ costStructureRouter
       res.status(500).json({ error: "Błąd podczas usuwania rekordu" });
     }
   });
-
-// .delete("/delete/:id", async (req: Request, res: Response) => {
-//   const id = req.params.id;
-//   try {
-//     const record = (await CategoryRecord.getOne(id)) as CategoryRecord;
-//     if (!record) {
-//       res.status(404).json({ error: "Rekord o podanym ID nie istnieje." });
-//     } else {
-//       const recordToDelete = new CategoryRecord({ ...record });
-
-//       await recordToDelete.delete();
-//       res.status(204).send();
-//     }
-//   } catch (error) {
-//     console.error("Błąd podczas usuwania rekordu:", error);
-//     res.status(500).json({ error: "Błąd podczas usuwania rekordu" });
-//   }
-// });

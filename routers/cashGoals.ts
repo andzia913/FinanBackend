@@ -9,20 +9,16 @@ export const cashGoalsRouter = Router();
 
 cashGoalsRouter
   .get("/", async (req: Request, res: Response) => {
-    const user_email = req.body.user_mail
-      ? req.body.user_email
-      : "tester@testowy.test";
+    const user_email = req.body.user_email;
     const goals = await GoalRecord.listAllWithSum(user_email);
+    console.log("odsyłamy", goals);
     res.json(goals);
   })
   .post("/add/dedicated-amount", async (req: Request, res: Response) => {
     try {
       const goal_name = req.body.goal_name;
       const value = req.body.value;
-      console.log(goal_name, value, req.body);
-      const user_email = req.body.user_email
-        ? req.body.user_email
-        : "tester@testowy.test";
+      const user_email = req.body.user_email;
 
       const [existingCategory] = (await pool.execute(
         "SELECT id_category FROM categories WHERE user_email = ? AND category_name = 'Cele oszczędnościowe'",
@@ -67,12 +63,13 @@ cashGoalsRouter
   })
   .post("/add", async (req: Request, res: Response) => {
     try {
+      const user_email = req.body.user_email;
       const goalData = req.body;
       const insertedId = await new GoalRecord({
         goal_name: goalData.goal_name,
         value: goalData.value,
         date: goalData.date,
-      }).insert();
+      }).insert(user_email);
       res.status(201).json({ id: insertedId });
     } catch (error) {
       console.error("Błąd podczas przetwarzania żądania:", error);

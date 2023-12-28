@@ -13,8 +13,8 @@ financialBalanceRouter
   })
 
   .get("/categories", async (req: Request, res: Response) => {
-    const categories = await CategoryRecord.listAll();
-    console.log("kategorie bilans", categories);
+    const user_mail = req.body.user_email;
+    const categories = await CategoryRecord.listAll(user_mail);
     res.json(categories);
   })
   .get("/get-one/:id", async (req: Request, res: Response) => {
@@ -32,9 +32,7 @@ financialBalanceRouter
     }
   })
   .get("/", async (req: Request, res: Response) => {
-    const user_email = req.body.user_mail
-      ? req.body.user_email
-      : "tester@testowy.test";
+    const user_email = req.body.user_email;
     const financialBalance = await BalanceRecord.listAll(user_email);
 
     const [balanceIncomeSum] = await pool.execute(
@@ -52,12 +50,11 @@ financialBalanceRouter
     });
   })
   .post("/add", async (req: Request, res: Response) => {
-    console.log("próbuje dodać na backendzie ");
     try {
+      const user_email = req.body.user_email;
       const formData = req.body;
-      const insertedId = await new BalanceRecord(formData).insert();
+      const insertedId = await new BalanceRecord(formData).insert(user_email);
 
-      //   const insertedId = formData;
       res.status(201).json({ id: insertedId });
     } catch (error) {
       console.error("Błąd podczas przetwarzania żądania:", error);
@@ -83,10 +80,8 @@ financialBalanceRouter
   .put("/update/:id", async (req: Request, res: Response) => {
     const id = req.params.id;
     const updatedData = req.body;
-
     try {
       const isRecord = await BalanceRecord.getOne(id);
-
       if (!isRecord) {
         res.status(404).json({ error: "Rekord o podanym ID nie istnieje." });
       } else {

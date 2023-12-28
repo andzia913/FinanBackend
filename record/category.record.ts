@@ -14,20 +14,20 @@ class CategoryRecord implements CategoryEntity {
     this.user_email = obj.user_email;
     this.category_name = obj.category_name;
   }
-  public static async listAll(): Promise<CategoryRecord[]> {
+  public static async listAll(user_email: string): Promise<CategoryRecord[]> {
     const [results] = (await pool.execute(
-      "SELECT * FROM `categories`"
+      "SELECT * FROM `categories` WHERE user_email=?",
+      [user_email]
     )) as CategoryRecordResult;
     return results;
   }
-  public async insert(): Promise<string> {
+  public async insert(user_email: string): Promise<string> {
     if (!this.id_category) {
       this.id_category = uuid();
     }
-    if (!this.user_email) {
-      this.user_email = "tester@testowy.test";
-    }
-    console.log("obiekt reccord", this);
+
+    this.user_email = user_email;
+
     await pool.execute(
       "INSERT INTO `categories` VALUES (:id_category, :user_email, :category_name)",
       {

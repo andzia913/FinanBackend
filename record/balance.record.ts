@@ -28,7 +28,7 @@ export class BalanceRecord implements BalanceEntity {
     this.comment = obj.comment;
     this.planned = obj.planned;
   }
-  public static async listAll(user_email): Promise<BalanceRecord[]> {
+  public static async listAll(user_email: string): Promise<BalanceRecord[]> {
     const [results] = (await pool.execute(
       "SELECT financial_balance.*, types.type_name, types.id_type, categories.category_name, categories.id_category FROM `financial_balance` LEFT JOIN `types` ON financial_balance.type = types.id_type LEFT JOIN `categories` ON financial_balance.category = categories.id_category WHERE financial_balance.user_email = ? ORDER BY financial_balance.date DESC",
       [user_email]
@@ -48,13 +48,13 @@ export class BalanceRecord implements BalanceEntity {
     return results[0];
   }
 
-  public async insert(): Promise<string> {
+  public async insert(user_email: string): Promise<string> {
     if (!this.id) {
       this.id = uuid();
     }
-    if (!this.user_email) {
-      this.user_email = "tester@testowy.test";
-    }
+
+    this.user_email = user_email;
+
     if (!this.planned) {
       this.planned = this.date > new Date() ? 1 : 0;
     }

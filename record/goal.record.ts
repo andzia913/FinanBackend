@@ -22,7 +22,9 @@ class GoalRecord implements GoalEntity {
     this.goal_name = obj.goal_name;
     this.date = obj.date;
   }
-  public static async listAllWithSum(user_email): Promise<GoalEntityWithSum[]> {
+  public static async listAllWithSum(
+    user_email: string
+  ): Promise<GoalEntityWithSum[]> {
     const goals = await GoalRecord.listAll(user_email);
     const sumOfGoals = await GoalRecord.calculateSum(user_email);
     const combinedGoals = GoalRecord.mergeGoalsWithSum(goals, sumOfGoals);
@@ -36,7 +38,6 @@ class GoalRecord implements GoalEntity {
       const resultExists = sumOfGoals.find(
         (result: SumOfGoals) => result.goal_name === goal.goal_name
       );
-
       return {
         id: goal.id,
         user_email: goal.user_email,
@@ -46,26 +47,26 @@ class GoalRecord implements GoalEntity {
         currValue: resultExists ? Number(resultExists.currValue.toFixed(2)) : 0,
       };
     });
-
     return resultsWithCurrValueOfEachGoal;
   }
 
   private static async calculateSum(user_email): Promise<SumOfGoals[]> {
     const [sumOfGoalsFromDb] = (await pool.execute(
-      "SELECT SUM(value) AS currValue, comment AS category_name FROM financial_balance LEFT JOIN `categories` ON financial_balance.category = categories.id_category WHERE financial_balance.user_email = ? AND categories.category_name = 'Cele oszczędnościowe' GROUP BY financial_balance.comment",
+      "SELECT SUM(value) AS currValue, comment AS goal_name FROM financial_balance LEFT JOIN `categories` ON financial_balance.category = categories.id_category WHERE financial_balance.user_email = ? AND categories.category_name = 'Cele oszczędnościowe' GROUP BY financial_balance.comment",
       [user_email]
     )) as RowDataPacket[];
-    const sumOfGoals: SumOfGoals[] = sumOfGoalsFromDb.map((result) => {
-      return {
-        currValue: result.currValue,
-        goal_name: result.category_name,
-      };
-    });
-    console.log("sumofgoals", sumOfGoals);
+    const sumOfGoals: SumOfGoals[] = sumOfGoalsFromDb.map(
+      (result: SumOfGoals) => {
+        return {
+          currValue: result.currValue,
+          goal_name: result.goal_name,
+        };
+      }
+    );
     return sumOfGoals;
   }
 
-  public static async listAll(user_email): Promise<GoalEntity[]> {
+  public static async listAll(user_email: string): Promise<GoalEntity[]> {
     const [results] = (await pool.execute(
       "SELECT * FROM `goals` WHERE goals.user_email = ?",
       [user_email]
@@ -73,13 +74,11 @@ class GoalRecord implements GoalEntity {
 
     return results.map((obj) => new GoalRecord(obj));
   }
-  public async insert(): Promise<string> {
+  public async insert(user_email: string): Promise<string> {
     if (!this.id) {
       this.id = uuid();
     }
-    if (!this.user_email) {
-      this.user_email = "tester@testowy.test";
-    }
+    this.user_email = user_email;
 
     await pool.execute(
       "INSERT INTO `goals` VALUES(:id, :user_email, :value, :goal_name, :date )",
