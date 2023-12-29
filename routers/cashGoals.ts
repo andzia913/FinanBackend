@@ -3,7 +3,7 @@ import { GoalRecord } from "../record/goal.record";
 import { GoalEntity } from "../types/goal.entity";
 import { pool } from "../utils/db";
 import { v4 as uuid } from "uuid";
-import { RowDataPacket } from "mysql2/typings/mysql";
+import { RowDataPacket } from "mysql2/promise";
 
 export const cashGoalsRouter = Router();
 

@@ -8,6 +8,8 @@ import { cashFlowRouter } from "./routers/cashFlow";
 import { cashGoalsRouter } from "./routers/cashGoals";
 import { loginRouter } from "./routers/login";
 import { registerRouter } from "./routers/register";
+import { Request } from "express";
+import { JsonWebTokenError, TokenExpiredError } from "jsonwebtoken";
 const jwt = require("jsonwebtoken");
 
 const app = require("https-localhost")();
@@ -20,7 +22,10 @@ app.use(express.urlencoded({ extended: false }));
 app.use("/login", loginRouter);
 app.use("/register", registerRouter);
 
-app.use((req, res, next) => {
+interface TokenData {
+  mail: string;
+}
+app.use((req: Request, res: express.Response, next: express.NextFunction) => {
   const token = req.headers["authorization"];
   if (!token) {
     return res.sendStatus(401);
@@ -28,7 +33,7 @@ app.use((req, res, next) => {
   jwt.verify(
     token.replace("Bearer ", ""),
     process.env.SECRET_KEY,
-    (err, tokenData) => {
+    (err: JsonWebTokenError, tokenData: TokenData) => {
       if (err) {
         return res.sendStatus(403);
       }
