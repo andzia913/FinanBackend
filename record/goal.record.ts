@@ -50,7 +50,7 @@ class GoalRecord implements GoalEntity {
     return resultsWithCurrValueOfEachGoal;
   }
 
-  private static async calculateSum(user_email): Promise<SumOfGoals[]> {
+  private static async calculateSum(user_email: string): Promise<SumOfGoals[]> {
     const [sumOfGoalsFromDb] = (await pool.execute(
       "SELECT SUM(value) AS currValue, comment AS goal_name FROM financial_balance LEFT JOIN `categories` ON financial_balance.category = categories.id_category WHERE financial_balance.user_email = ? AND categories.category_name = 'Cele oszczędnościowe' GROUP BY financial_balance.comment",
       [user_email]

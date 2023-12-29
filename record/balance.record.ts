@@ -4,6 +4,8 @@ import { FieldPacket } from "mysql2";
 import { BalanceEntity, SumOfCostsAndIncomes } from "../types/balance.entity";
 
 type BalanceRecordResult = [BalanceRecord[], FieldPacket[]];
+type TotalIncomeResult = [{ balanceIncomeSum: number }[], FieldPacket[]];
+type TotalCostResult = [{ balanceCostSum: number }[], FieldPacket[]];
 
 export class BalanceRecord implements BalanceEntity {
   id?: string;
@@ -38,17 +40,17 @@ export class BalanceRecord implements BalanceEntity {
   public static async getSumOfCostsAndIncomes(
     user_email: string
   ): Promise<SumOfCostsAndIncomes> {
-    const [balanceIncomeSum] = await pool.execute(
+    const [balanceIncomeSum] = (await pool.execute(
       "SELECT SUM(financial_balance.value) AS totalIncome FROM financial_balance LEFT JOIN `types` ON financial_balance.type = types.id_type WHERE financial_balance.user_email = ? AND types.type_name = 'Przychód'",
       [user_email]
-    );
-    const [balanceCostSum] = await pool.execute(
+    )) as TotalIncomeResult;
+    const [balanceCostSum] = (await pool.execute(
       "SELECT SUM(financial_balance.value) AS totalCost FROM financial_balance LEFT JOIN `types` ON financial_balance.type = types.id_type WHERE financial_balance.user_email = ? AND types.type_name = 'Koszt'",
       [user_email]
-    );
+    )) as TotalCostResult;
     return {
-      balanceCostSum: balanceCostSum[0],
-      balanceIncomeSum: balanceIncomeSum[0],
+      balanceCostSum: balanceCostSum[0].balanceCostSum,
+      balanceIncomeSum: balanceIncomeSum[0].balanceIncomeSum,
     };
   }
 
