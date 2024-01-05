@@ -21,7 +21,7 @@ Database operations are handled through instances of classes, with each class co
 
 ### Prerequisites
 
-- Node.js, npm, xampp and HeidiSQL installed on your machine.
+- Node.js, npm, xampp and HeidiSQL installed on your computer.
 - MySQL database set up for backend. Script SQL in file db.sql
 
 ### Installation
