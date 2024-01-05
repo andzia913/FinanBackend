@@ -4,13 +4,17 @@
 
 Welcome to FinanApp, a dynamic financial management application designed to streamline the tracking and planning of your financial journey. This application is divided into a frontend and backend. The frontend, built with React and MaterialUI, provides a responsive web design (RWD) for optimal user experience. It communicates with the backend, developed using Node.js and Express, along with a MySQL relational database.
 
-###Routers
+### Routers
+
 The backend utilizes various routers to handle different functionalities:
 Login and Register Router: Manages authentication.
 Financial Balance Router: Handles the creation, modification, and deletion of financial records.
 Category Router: Manages custom categories for organizing financial data.
 Goal Router: Facilitates the creation and tracking of savings goals.
-###Database Handling
+
+
+### Database Handling
+
 Database operations are handled through instances of classes, with each class corresponding to a specific table in the database. These classes encapsulate the logic for interacting with the database and ensure seamless data handling. Routers, on the other hand, are responsible for routing and responding to different views within the application.
 
 ## Getting Started
