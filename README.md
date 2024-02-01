@@ -3,6 +3,7 @@
 ## Introduction
 
 Welcome to FinanApp, a dynamic financial management application designed to streamline the tracking and planning of your financial journey. This application is divided into a frontend and backend. The frontend, built with React and MaterialUI, provides a responsive web design (RWD) for optimal user experience. It communicates with the backend, developed using Node.js and Express, along with a MySQL relational database.
+Second part of the code [frontend code]([http://www.example.com](https://github.com/andzia913/finan-frontend)). 
 
 ### Routers
 
