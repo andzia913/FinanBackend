@@ -22,7 +22,7 @@ registerRouter.post("/", async (req: Request, res: Response) => {
     await UserRecord.insert(completedUser);
     res.status(201).json({ message: "User successfully registered" });
   } catch (e) {
-    console.log(e);
+    console.error(e);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });

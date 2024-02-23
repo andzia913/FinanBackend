@@ -11,7 +11,6 @@ cashGoalsRouter
   .get("/", async (req: Request, res: Response) => {
     const user_email = req.body.user_email;
     const goals = await GoalRecord.listAllWithSum(user_email);
-    console.log("odsyłamy", goals);
     res.json(goals);
   })
   .post("/add/dedicated-amount", async (req: Request, res: Response) => {

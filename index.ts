@@ -10,12 +10,18 @@ import { loginRouter } from "./routers/login";
 import { registerRouter } from "./routers/register";
 import { Request } from "express";
 import { JsonWebTokenError, TokenExpiredError } from "jsonwebtoken";
+import * as cors from "cors";
 const jwt = require("jsonwebtoken");
 
-const app = require("https-localhost")();
+const app = express();
 
 dotenv.config();
-
+app.use(
+  cors({
+    origin: ["http://127.0.0.1:5173", "http://localhost:5173"],
+    optionsSuccessStatus: 200,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -44,9 +50,9 @@ app.use((req: Request, res: express.Response, next: express.NextFunction) => {
 });
 
 app.use("/", mainRouter);
-app.use("/cost-structure", costStructureRouter);
+app.use("/costStructure", costStructureRouter);
 app.use("/financialBalance", financialBalanceRouter);
 app.use("/cashFlow", cashFlowRouter);
-app.use("/cash-goals", cashGoalsRouter);
+app.use("/cashGoals", cashGoalsRouter);
 
 app.listen(5000);

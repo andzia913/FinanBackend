@@ -4,8 +4,8 @@ import { FieldPacket } from "mysql2";
 import { BalanceEntity, SumOfCostsAndIncomes } from "../types/balance.entity";
 
 type BalanceRecordResult = [BalanceRecord[], FieldPacket[]];
-type TotalIncomeResult = [{ balanceIncomeSum: number }[], FieldPacket[]];
-type TotalCostResult = [{ balanceCostSum: number }[], FieldPacket[]];
+type TotalIncomeResult = [{ totalIncome: number }[], FieldPacket[]];
+type TotalCostResult = [{ totalCost: number }[], FieldPacket[]];
 
 export class BalanceRecord implements BalanceEntity {
   id?: string;
@@ -49,8 +49,8 @@ export class BalanceRecord implements BalanceEntity {
       [user_email]
     )) as TotalCostResult;
     return {
-      balanceCostSum: balanceCostSum[0].balanceCostSum,
-      balanceIncomeSum: balanceIncomeSum[0].balanceIncomeSum,
+      balanceCostSum: balanceCostSum[0].totalCost,
+      balanceIncomeSum: balanceIncomeSum[0].totalIncome,
     };
   }
 
