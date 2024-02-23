@@ -12,6 +12,7 @@ push.autoSetupRemote = true
 
 # production
 /build
+/dist
 
 # misc
 .DS_Store
