@@ -1,6 +1,10 @@
 import * as express from "express";
 import "express-async-errors";
 import * as dotenv from "dotenv";
+import { JsonWebTokenError, TokenExpiredError } from "jsonwebtoken";
+import * as cors from "cors";
+const jwt = require("jsonwebtoken");
+const path = require("path");
 import { mainRouter } from "./routers/main";
 import { costStructureRouter } from "./routers/costStructure";
 import { financialBalanceRouter } from "./routers/financialBalance";
@@ -9,21 +13,25 @@ import { cashGoalsRouter } from "./routers/cashGoals";
 import { loginRouter } from "./routers/login";
 import { registerRouter } from "./routers/register";
 import { Request } from "express";
-import { JsonWebTokenError, TokenExpiredError } from "jsonwebtoken";
-import * as cors from "cors";
-const jwt = require("jsonwebtoken");
 
 const app = express();
 
 dotenv.config();
 app.use(
   cors({
-    origin: ["http://127.0.0.1:5173", "http://localhost:5173"],
+    origin: [
+      "http://127.0.0.1:5173",
+      "http://localhost:5173",
+      "https://appvps.pl",
+    ],
     optionsSuccessStatus: 200,
   })
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+process.env.MODE === "dev" &&
+  app.use(express.static(path.join(__dirname, "client/build")));
 
 app.use("/login", loginRouter);
 app.use("/register", registerRouter);
