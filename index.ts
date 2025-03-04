@@ -1,8 +1,8 @@
-import * as express from "express";
+import express from "express";
 import "express-async-errors";
 import * as dotenv from "dotenv";
 import { JsonWebTokenError, TokenExpiredError } from "jsonwebtoken";
-import * as cors from "cors";
+import cors from "cors";
 const jwt = require("jsonwebtoken");
 const path = require("path");
 import { mainRouter } from "./routers/main";
@@ -13,6 +13,7 @@ import { cashGoalsRouter } from "./routers/cashGoals";
 import { loginRouter } from "./routers/login";
 import { registerRouter } from "./routers/register";
 import { Request } from "express";
+import {AppDataSource} from "./utils/db";
 
 const app = express();
 
@@ -63,4 +64,10 @@ app.use("/financialBalance", financialBalanceRouter);
 app.use("/cashFlow", cashFlowRouter);
 app.use("/cashGoals", cashGoalsRouter);
 
-app.listen(5000);
+AppDataSource.initialize()
+    .then(() => {
+        console.log("Połączono z bazą danych");
+        app.listen(5000);
+    })
+    .catch((error) => console.error("Błąd połączenia:", error));
+
