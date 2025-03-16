@@ -14,6 +14,7 @@ import { loginRouter } from "./routers/login";
 import { registerRouter } from "./routers/register";
 import { Request } from "express";
 import {AppDataSource} from "./utils/db";
+import {addInitialData} from "./services/dataSeeder";
 
 const app = express();
 
@@ -67,7 +68,7 @@ app.use("/cashGoals", cashGoalsRouter);
 AppDataSource.initialize()
     .then(() => {
         console.log("Połączono z bazą danych");
-        app.listen(5000);
+        addInitialData().then(r => app.listen(5000));
     })
     .catch((error) => console.error("Błąd połączenia:", error));
 
