@@ -10,6 +10,7 @@ export const AppDataSource = new DataSource({
   database: "budget_app",
   synchronize: true,
   logging: true,
-  entities: ["src/entities/*.ts"],
+  entities: ["../entities/*.ts"],
+  migrations: ['../migrations/*.js'],
 });
 
