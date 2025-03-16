@@ -13,8 +13,8 @@ costStructureRouter
           return res.status(404).json({ message: "User not found" });
         }
 
-        //const costStructure = await CategoryService.getCostStructure(user);
-        //res.json(costStructure);
+        const costStructure = await CategoryService.getCostStructure(user);
+        res.json(costStructure);
       } catch (error) {
         console.error("Błąd w trakcie pobierania struktury kosztów:", error);
         res.status(500).json({ message: "Internal Server Error" });
