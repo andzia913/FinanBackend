@@ -14,7 +14,12 @@ costStructureRouter
         }
 
         const costStructure = await CategoryService.getCostStructure(user);
-        res.json(costStructure);
+        const parsedResult = costStructure.map(row => ({
+          ...row,
+          value: Number(row.value)
+        }));
+        console.log("costStructure", parsedResult);
+        res.json(parsedResult);
       } catch (error) {
         console.error("Błąd w trakcie pobierania struktury kosztów:", error);
         res.status(500).json({ message: "Internal Server Error" });

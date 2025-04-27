@@ -33,8 +33,8 @@ export class BalanceService {
                 .getRawOne();
 
             return {
-                balanceCostSum: balanceCostSum?.totalCost || 0,
-                balanceIncomeSum: balanceIncomeSum?.totalIncome || 0,
+                balanceCostSum: Number(balanceCostSum?.totalCost) || 0,
+                balanceIncomeSum: Number(balanceIncomeSum?.totalIncome) || 0,
             };
     }
 

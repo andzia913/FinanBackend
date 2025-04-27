@@ -22,15 +22,17 @@ export class CategoryService {
         return await CategoryRepository.findOne({ where: { id } });
     }
     static async getCostStructure(user: User): Promise<Balance[]> {
+        console.log("user", user);
         return BalanceRepository
-                .createQueryBuilder("b")
-                .innerJoin("b.category", "c", "c.id = b.categoryId")
-                .innerJoin("b.user", "u", "u.id = b.userId")
-                .where("b.userId = :userId", {userId: user.id})
-                .groupBy("b.categoryId")
-                .select("*")
-                .addSelect("SUM(b.value)", "value")
-                .getRawMany();
-        }
+            .createQueryBuilder("b")
+            .innerJoin("b.category", "c")
+            .innerJoin("b.user", "u")
+            .where("b.user.id = :userId", {userId: user.id})
+            .groupBy("b.category.id")
+            .select("b.category.id", "categoryId")
+            .addSelect("c.name", "categoryName")
+            .addSelect("SUM(b.value)", "value")
+            .getRawMany();
+    }
 
 }

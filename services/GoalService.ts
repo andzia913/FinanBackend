@@ -2,12 +2,16 @@ import { GoalRepository } from "../repositories/goalRepository";
 import { User } from "../entities/User";
 import { Goal } from "../entities/Goal";
 import { AppDataSource } from "../utils/db";
-import { v4 as uuid } from "uuid";
+import {BalanceService} from "./BalanceService";
+import {BalanceRepository} from "../repositories/balanceRepository";
+import {CategoryRepository} from "../repositories/categoryRepository";
+import {Category} from "../entities/Category";
+import {TypeRepository} from "../repositories/typeRepository";
 
 export class GoalService {
     static async listAllWithSum(user: User): Promise<any[]> {
         const goals = await GoalRepository.find({ where: { user } });
-        const sumOfGoals = await GoalService.calculateSum(user.email);
+        const sumOfGoals = await GoalService.calculateSum(user);
         return GoalService.mergeGoalsWithSum(goals, sumOfGoals);
     }
 
@@ -24,17 +28,17 @@ export class GoalService {
         });
     }
 
-    private static async calculateSum(user_email: string): Promise<any[]> {
-        return await AppDataSource.manager.query(
-            `SELECT SUM(value) AS currValue, comment AS goal_name
-             FROM financial_balance
-                      LEFT JOIN categories ON financial_balance.category = categories.id_category
-             WHERE financial_balance.user_email = ?
-               AND categories.category_name = 'Cele oszczędnościowe'
-             GROUP BY financial_balance.comment`,
-            [user_email]
-        );
+    private static async calculateSum(user :User): Promise<any[]> {
+        return BalanceRepository
+            .createQueryBuilder("b")
+            .innerJoin("b.category", "c")
+            .innerJoin("b.user", "u")
+            .where("b.user.id = :userId", {userId: user.id})
+            .andWhere("c.name = :categoryName", { categoryName: "Cele oszczędnościowe" })
+            .groupBy("b.comment")
+            .getRawMany();
     }
+
 
     static async insert(user: User, goalData: Partial<Goal>): Promise<Goal> {
         const newGoal = GoalRepository.create({ ...goalData, user });
@@ -43,26 +47,39 @@ export class GoalService {
 
     static async addDedicatedAmount(user: User, goal_name: string, value: number): Promise<void> {
         const entityManager = AppDataSource.manager;
+        const existingCategory= await CategoryRepository.createQueryBuilder("c").where("c.user.id = :userId", {userId: user.id}).andWhere("c.name = :name" , {name: "Cele oszczędnościowe"}).getOne()
 
-        const existingCategory = await entityManager.query(
-            "SELECT id_category FROM categories WHERE user_email = ? AND category_name = 'Cele oszczędnościowe'",
-            [user.email]
-        );
+        let category: Category;
 
-        let categoryId: string;
-        if (!existingCategory[0]) {
-            categoryId = uuid();
-            await entityManager.query(
-                "INSERT INTO `categories` VALUES (?, ?, ?)",
-                [categoryId, user.email, "Cele oszczędnościowe"]
-            );
+        if (!existingCategory) {
+            const insertResult = await CategoryRepository.createQueryBuilder("c")
+                .insert()
+                .into(Category)
+                .values({
+                    name: "Cele oszczędnościowe",
+                    user: user
+                })
+                .execute();
+            //console.log(insertResult);
+            const insertedId = insertResult.identifiers[0].id;
+
+            category = await CategoryRepository.findOne({
+                where: { id: insertedId }
+            });
         } else {
-            categoryId = existingCategory[0].id_category;
+            category = existingCategory;
         }
+        const typeEntity = await TypeRepository.findOne({ where: { id: 2 } });
 
-        await entityManager.query(
-            "INSERT INTO `financial_balance` VALUES(?, ?, ?, ?, ?, ?, ?, ?)",
-            [uuid(), user.email, "52595e0d-5dee-11ee-9aec-9828a608d513", new Date(), value, categoryId, goal_name, 0]
-        );
+        await BalanceService.insert(user, {
+            name: "Cele oszczędnościowe",
+
+            type: typeEntity,
+            date: new Date(),
+            value: value,
+            category: category,
+            comment: goal_name
+        } )
+
     }
 }
